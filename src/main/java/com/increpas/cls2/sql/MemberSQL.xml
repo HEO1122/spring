@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="mSQL">
+
+	<!-- 
+		질의명령을 기술할 XML 문서는 
+		root 태그가 mapper 태그로 시작해야한다.
+		그리고 이 태그의 속성으로 namespace를 줘야 하는데
+		이 속성의 의미는 마이바티스에서 사용하는 질의명령 파일들을 구분해주는 용도이다.
+		
+	 -->
+	<!--  회원가입 시 아이디 체크 질의 명령 -->
+	<select id="idCheck" resultType="int" parameterType="string">
+		SELECT
+			count(*) 
+		FROM
+			member
+		WHERE
+			id = #{sid} <!-- dao에서 채워주는 변수이름쓰기 -->
+	</select>
+	<!--  로그인 처리 질의 명령 -->
+	<select id="login" resultType="int" parameterType="mVO">
+		SELECT
+			count(*)
+		FROM
+			member
+		WHERE
+			isshow ='Y'
+			AND id = #{id}
+			AND pw = #{pw}
+	</select>
+	
+	<!-- 회원리스트 조회 질의명령 -->
+	<select id="memberList" resultType="mVO" >
+		SELECT
+			mno, name, gen, joindate jDate, joindate jTime
+		FROM
+			member
+		WHERE
+			isshow='Y'
+		ORDER BY 
+			mno DESC
+	</select>
+	
+	<!-- 회원 정보 조회 질의명령 -->
+	<select id="memberIdInfo" resultType="mVO" parameterType="string">
+		SELECT
+			mno, id, name, mail, tel, member.gen, ano, savename, joindate jDate, joindate jTime
+		FROM
+			member, avatar
+		WHERE
+			avt = ano
+			AND isShow = 'Y'
+			AND id = #{id}
+	</select>
+	<select id="memberNoInfo" resultType="mVO" parameterType="int">
+		SELECT
+			mno, id, name, mail, tel, member.gen, ano, savename, joindate jDate, joindate jTime
+		FROM
+			member, avatar
+		WHERE
+			avt = ano
+			AND isShow = 'Y'
+			AND mno = #{mno}
+	</select>
+	
+	
+	<insert id="addMember" parameterType="mVO">
+		<selectKey keyProperty="mno" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(mno)+1, 1001)
+			FROM
+				member
+		</selectKey>
+		INSERT INTO
+			member(mno, id, pw, name, mail, tel, gen, avt)
+		VALUES(
+			#{mno}, #{id}, #{pw}, #{name},
+			#{mail}, #{tel}, #{gen}, #{ano}
+		)
+	</insert>
+	
+	
+	<update id="editMyInfo" parameterType="mVO">
+		UPDATE
+			member
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="pw neq null">
+				pw = #{pw}, 
+			</if>
+			<if test="mail neq null">
+				mail = #{mail}, 
+			</if>
+			<if test="tel neq null">
+				tel = #{tel}, 
+			</if>
+			<if test="ano neq 0">
+				avt = #{ano},
+			</if>
+		</trim>
+		WHERE
+			id = #{id}
+	</update>
+	
+	<update id="editMyInfo1" parameterType="mVO">
+		UPDATE
+			member
+		<set>
+			<if test="pw neq null">
+				pw = #{pw}, 
+			</if>
+			<if test="mail neq null">
+				mail = #{mail}, 
+			</if>
+			<if test="tel neq null">
+				tel = #{tel}, 
+			</if>
+			<if test="ano neq 0">
+				avt <!-- 데이터베이스 컬럼이름 -->= #{ano}<!-- vo변수 -->,
+			</if>
+		WHERE
+			id = #{id}	
+		</set>
+	</update> 	
+	<!--  성별 아바타 리스트 질의명령 -->
+		<select id = "avtGenList" resultType="mVO" parameterType="String">
+			SELECT 
+				ano, savename avatar, gen
+			FROM
+				avatar
+			WHERE
+				gen = #{gen}
+			ORDER BY
+				ano
+		</select>	 
+		
+	
+</mapper>	

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="sSQL">
+	<!-- 현재 진행중인 설문조사 갯수 조회질의명령 -->
+	<select id="psntCount" resultType="int">
+		select
+			count(*)
+		from
+			surveyInfo
+		where
+			sysdate BETWEEN startdate AND enddate		
+	</select>
+	<!-- 진행중인 설문조사 리스트 조회 질의명령 -->
+	<select id="ingSrvy" resultType="sVO">
+		select
+		    sino, title, enddate
+		from
+		    surveyInfo
+		where
+		    sysdate between startdate and enddate
+	</select>
+	
+	<!-- 설문 문항 리스트 조회질의명령 -->
+	<select id="selQuest" resultType="sVO" parameterType="int">
+		select
+		    sqno qno, sqbody body, sq_sino sino, sqgroup
+		from
+		    surveyQuest
+		where
+		    sq_sino = #{sino}
+		    and sqno = sqgroup
+		order by
+		    sqgroup asc
+	</select>
+	
+	<!-- 문항의 보기 리스트 조회 질의명령 -->
+	<select id="selEx" resultType="sVO" parameterType="int">
+			select
+			    sqno qno, sqbody ex, exno,sq_sino sino, sqgroup
+			from
+			    surveyQuest
+			where
+			    sqgroup = #{qno}
+			    and sqno != sqgroup
+			order by
+			    exno asc
+	</select>
+	<!-- 설문 응답 질의명령 -->
+	<insert id="addAnswer" parameterType="sVO">
+		insert into
+		    survey(sno, smno, srv_qno)
+		values(
+		    (
+		        SELECT 
+		            nvl(max(sno) +1, 100001)
+		        FROM
+		            survey
+		    ),
+		    (
+		        select
+		            mno
+		        from
+		            member
+		        where
+		            id = #{id}
+		    ),
+		    #{qno}
+		)
+	</insert>
+</mapper>

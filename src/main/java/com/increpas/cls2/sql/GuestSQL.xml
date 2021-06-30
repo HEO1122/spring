@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="gSQL">
+	<!-- 게시글 총 갯수 조회 질의명령 -->
+	<select id="getTotal" resultType="int">
+	SELECT
+		count(*)
+	FROM
+		guestboard
+	WHERE
+		isshow ='Y'
+	</select>
+	
+	<!-- 게시글 리스트 가져오는 질의명령 -->
+	<select id="allList" resultType="bVO" > <!-- MYBATIS 약칭 넣기 -->
+	    SELECT
+	        rno, gno, mno, id, avatar, ebody, wdate
+	    FROM
+		(
+	    SELECT 
+			 	rownum  rno ,gno , mno, id, avatar, ebody, wdate
+		FROM
+			(SELECT
+				gno, mno, id, savename avatar, body ebody, wdate
+			FROM
+				guestBoard g, member, avatar
+			WHERE
+				writer = mno
+				AND avt = ano
+				AND g.isshow = 'Y'
+			ORDER BY
+				wdate DESC
+			)
+	    )   
+	    WHERE
+	        rno between #{startCont} and #{endCont}
+	</select>
+	<!--  작성글 수 조회 질의명령 -->
+	<select id="getCount" resultType="int" parameterType="String">
+		SELECT
+			count(*)
+		FROM
+			guestBoard
+		WHERE
+			writer = (
+						SELECT
+							mno
+						FROM
+							member
+						WHERE
+							id = #{id}					
+					)
+	</select>
+	<!-- 작성자 정보조회 질의명령  -->
+	<select id="writerInfo" resultType="bVO" parameterType="string">
+		SELECT
+			mno, savename avatar
+		FROM
+			member, avatar
+		WHERE
+			id = #{id}
+			AND avt = ano
+	</select>
+	<insert id="addGBoard" parameterType="bVO" >
+		<selectKey keyProperty="gno" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(gno)+1, 1001)
+			FROM
+				guestBoard
+		</selectKey>
+		INSERT INTO
+			guestBoard(gno, body, writer )
+		VALUES(
+			#{gno}, #{body}, #{mno}
+			
+		)
+	</insert>
+	
+</mapper>
